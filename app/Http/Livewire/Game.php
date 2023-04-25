@@ -48,7 +48,6 @@ class Game extends Component
 
         $this->cells = collect(range(1, 9))->map(fn (int $cell, int $key) => [
             'key' => $key,
-            'clicked' => false,
             'team' => null,
         ]);
     }
@@ -59,12 +58,11 @@ class Game extends Component
             return;
         }
 
-        if ($this->cells[$key]['clicked']) {
+        if ($this->cells[$key]['team']) {
             return;
         }
 
         $this->cells[$key] = array_merge($this->cells[$key], [
-            'clicked' => true,
             'team' => $this->currentTeam,
         ]);
 
@@ -83,7 +81,7 @@ class Game extends Component
             }
         }
 
-        if (count($this->cells->where('clicked', true)) === self::CELLS_QUANTITY) {
+        if (count($this->cells->whereNotNull('team')) === self::CELLS_QUANTITY) {
             $this->draw = true;
 
             return;

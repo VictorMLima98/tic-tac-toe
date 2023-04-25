@@ -17,22 +17,20 @@
             <div wire:click='handleClick({{ $key }})'
                 @class([
                     'p-16 bg-white flex items-center justify-center',
-                    'bg-gray-200' => $cell['clicked'],
+                    'bg-gray-200' => $cell['team'],
                     'cursor-pointer hover:bg-gray-300' => !$this->ended(),
                     'text-green-500' => in_array($key, $winnerCells)
                 ])>
-                @if ($cell['clicked'])
-                    @switch ($cell['team'])
-                        @case (self::TEAM_O)
-                            <span class="text-7xl font-bold">O</span>
-                        @break
-                        @case (self::TEAM_X)
-                            <span class="text-7xl font-bold">X</span>
-                        @break
-                    @endswitch
-                @else
+                @switch ($cell['team'])
+                    @case (self::TEAM_O)
+                        <span class="text-7xl font-bold">O</span>
+                    @break
+                    @case (self::TEAM_X)
+                        <span class="text-7xl font-bold">X</span>
+                    @break
+                    @default
                     <span class="text-7xl font-bold">&nbsp;</span>
-                @endif
+                @endswitch
             </div>
         @endforeach
     </div>
