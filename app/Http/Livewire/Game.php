@@ -2,6 +2,10 @@
 
 namespace App\Http\Livewire;
 
+use App\Events\CellFilled;
+use App\Events\GameDraw;
+use App\Events\GameLost;
+use App\Events\PlayerConnected;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Component;
@@ -27,10 +31,13 @@ class Game extends Component
         [2, 4, 6],
     ];
 
-    public array $teams = [
-        self::TEAM_O,
-        self::TEAM_X,
-    ];
+    public const STATUS_NOT_STARTED = 'not_started';
+
+    public const STATUS_WAITING = 'waiting';
+
+    public const STATUS_STARTED = 'started';
+
+    public string $status;
 
     public string $currentTeam;
 
@@ -40,16 +47,43 @@ class Game extends Component
 
     public array $winnerCells = [];
 
+    public bool $lost = false;
+
     public bool $draw = false;
+
+    protected $listeners = [
+        'echo:game,PlayerConnected' => 'alertPlayerConnected',
+        'echo:game,CellFilled' => 'cellFilled',
+        'echo:game,GameLost' => 'gameLost',
+        'echo:game,GameDraw' => 'gameDraw',
+    ];
 
     public function mount(): void
     {
+        $this->status = self::STATUS_NOT_STARTED;
+
         $this->currentTeam = self::TEAM_X;
 
         $this->cells = collect(range(1, 9))->map(fn (int $cell, int $key) => [
             'key' => $key,
             'team' => null,
         ]);
+    }
+
+    public function startGame(): void
+    {
+        $this->status = self::STATUS_WAITING;
+
+        broadcast(new PlayerConnected)->toOthers();
+    }
+
+    public function alertPlayerConnected(): void
+    {
+        if ($this->status === self::STATUS_WAITING) {
+            $this->status = self::STATUS_STARTED;
+
+            broadcast(new PlayerConnected)->toOthers();
+        }
     }
 
     public function handleClick(int $key): void
@@ -77,12 +111,18 @@ class Game extends Component
 
                 $this->winnerCells = $possibleWin;
 
+                broadcast(new CellFilled($this->cells->toArray(), $this->currentTeam))->toOthers();
+                broadcast(new GameLost($this->winner, $this->winnerCells))->toOthers();
+
                 return;
             }
         }
 
         if (count($this->cells->whereNotNull('team')) === self::CELLS_QUANTITY) {
             $this->draw = true;
+
+            broadcast(new CellFilled($this->cells->toArray(), $this->currentTeam))->toOthers();
+            broadcast(new GameDraw())->toOthers();
 
             return;
         }
@@ -96,6 +136,27 @@ class Game extends Component
             self::TEAM_O => self::TEAM_X,
             self::TEAM_X => self::TEAM_O,
         };
+
+        broadcast(new CellFilled($this->cells->toArray(), $this->currentTeam))->toOthers();
+    }
+
+    public function cellFilled(array $data): void
+    {
+        $this->cells = collect($data['cells']);
+        $this->currentTeam = $data['currentTeam'];
+    }
+
+    public function gameLost(array $data): void
+    {
+        $this->lost = true;
+
+        $this->winner = $data['winner'];
+        $this->winnerCells = $data['winnerCells'];
+    }
+
+    public function gameDraw(): void
+    {
+        $this->draw = true;
     }
 
     public function ended(): bool
