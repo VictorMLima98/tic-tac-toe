@@ -1,10 +1,10 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Livewire\Game;
+use App\Http\Livewire\Rooms;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth')->get('/', Game::class)->name('index');
+Route::middleware('auth')->get('/', Rooms::class)->name('index');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

@@ -15,12 +15,9 @@
         @livewireStyles
     </head>
     <body class="antialiased">
-        <div class="fixed z-10 w-full">
-            @include('layouts.navigation')
-        </div>
-        <div class="relative min-h-screen bg-gray-100 bg-center sm:flex sm:justify-center sm:items-center bg-dots-darker dark:bg-dots-lighter dark:bg-gray-900 selection:bg-red-500 selection:text-white">
+        @include('layouts.navigation')
+        <div class="min-h-screen bg-gray-900 bg-center sm:flex sm:justify-center sm:items-center bg-dots-darker selection:bg-red-500 selection:text-white">
             <div class="p-6 mx-auto max-w-7xl lg:p-8">
-                {{-- <livewire:game /> --}}
                 {{ $slot }}
             </div>
         </div>
