@@ -3,6 +3,7 @@
 namespace App\Http\Livewire;
 
 use App\Models\Room;
+use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\View\View;
 use Livewire\Component;
@@ -10,6 +11,8 @@ use Livewire\Component;
 class Rooms extends Component
 {
     public bool $showModal = false;
+
+    public User $user;
 
     public Room $room;
 
@@ -21,11 +24,18 @@ class Rooms extends Component
     public function mount(): void
     {
         $this->room = new Room();
+
+        $this->user = auth()->user();
+    }
+
+    public function getCurrentRoomProperty(): ?Room
+    {
+        return $this->user->rooms()->first();
     }
 
     public function getRoomsProperty(): LengthAwarePaginator
     {
-        return Room::query()->paginate(6);
+        return Room::query()->withCount('users')->paginate(6);
     }
 
     public function save(): void
@@ -35,7 +45,13 @@ class Rooms extends Component
         try {
             $this->room->save();
 
+            $this->room->users()->attach(auth()->id(), [
+                'users_online' => 1,
+            ]);
+
             $this->showModal = false;
+
+            $this->room = new Room();
         } catch (\Throwable $throwable) {
             report($throwable);
 

@@ -1,7 +1,10 @@
-<div class="bg-gray-400 rounded-lg">
+<div class="flex flex-col rounded-lg gap-y-8">
+    <div class="flex justify-end">
+        <x-secondary-button wire:click="quit">Quit Room</x-secondary-button>
+    </div>
     @if ($this->status === self::STATUS_STARTED)
         @if ($this->ended())
-            <div class="py-4 font-medium text-2xl text-center">
+            <div class="py-4 text-2xl font-medium text-center">
                 @if ($this->winner)
                     {{ $this->winner }} won!
                 @endif
@@ -11,7 +14,7 @@
                 @endif
             </div>
         @else
-            <div class="py-4 font-medium text-2xl text-center">{{ $this->currentTeam }} turn</div>
+            <div class="py-4 text-2xl font-medium text-center">{{ $this->currentTeam }} turn</div>
         @endunless
         <div class="grid grid-cols-3 grid-rows-3 divide-x divide-y rounded-md" x-data>
             @foreach ($this->cells as $key => $cell)
@@ -24,20 +27,20 @@
                     ])>
                     @switch ($cell['team'])
                         @case (self::TEAM_O)
-                            <span class="text-7xl font-bold">O</span>
+                            <span class="font-bold text-7xl">O</span>
                         @break
                         @case (self::TEAM_X)
-                            <span class="text-7xl font-bold">X</span>
+                            <span class="font-bold text-7xl">X</span>
                         @break
                         @default
-                        <span class="text-7xl font-bold">&nbsp;</span>
+                        <span class="font-bold text-7xl">&nbsp;</span>
                     @endswitch
                 </div>
             @endforeach
         </div>
     @elseif ($this->status === self::STATUS_WAITING)
-        <div class="text-7xl p-12">Waiting for a player...</div>
+        <div class="p-12 text-7xl">Waiting for a player...</div>
     @else
-        <button class="bg-black text-white text-7xl p-12" wire:click='startGame'>Start</button>
+        <button class="p-12 text-white bg-black text-7xl" wire:click='startGame'>Start</button>
     @endif
 </div>

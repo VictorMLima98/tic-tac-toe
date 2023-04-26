@@ -6,12 +6,18 @@ use App\Events\CellFilled;
 use App\Events\GameDraw;
 use App\Events\GameLost;
 use App\Events\PlayerConnected;
+use App\Models\Room;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Component;
 
 class Game extends Component
 {
+    public Room $room;
+
+    public User $user;
+
     public const TEAM_O = 'O';
 
     public const TEAM_X = 'X';
@@ -60,6 +66,8 @@ class Game extends Component
 
     public function mount(): void
     {
+        $this->user = auth()->user();
+
         $this->status = self::STATUS_NOT_STARTED;
 
         $this->currentTeam = self::TEAM_X;
@@ -162,6 +170,17 @@ class Game extends Component
     public function ended(): bool
     {
         return $this->winner || $this->draw;
+    }
+
+    public function quit(): void
+    {
+        $this->user->rooms()->detach($this->room->id);
+
+        if (! $this->room->users()->count()) {
+            $this->room->delete();
+        }
+
+        $this->redirect(route('index'));
     }
 
     public function render(): View
